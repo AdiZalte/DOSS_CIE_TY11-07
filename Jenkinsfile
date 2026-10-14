@@ -55,11 +55,19 @@ pipeline {
                     if errorlevel 1 exit /b 1
 
                     echo Validating Kubernetes manifests...
-                    kubectl apply --dry-run=client --validate=false -f deployment.yaml
+                   
+                    kubectl apply -f deployment.yaml
                     if errorlevel 1 exit /b 1
 
-                    kubectl apply --dry-run=client --validate=false -f service.yaml
+                    kubectl apply -f service.yaml
                     if errorlevel 1 exit /b 1
+
+                    kubectl rollout status deployment/devops-app --timeout=120s
+                    if errorlevel 1 exit /b 1
+
+                    kubectl get pods
+                    kubectl get services
+
 
                     echo Manifests validated successfully.
                 '''
