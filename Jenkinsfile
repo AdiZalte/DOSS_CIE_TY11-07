@@ -43,6 +43,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 bat 'echo Deploy stage: applying Kubernetes manifests...'
+                bat 'where kubectl'
+                bat 'kubectl config current-context'
                 bat 'dir deployment.yaml service.yaml'
                 bat 'kubectl apply --dry-run=client --validate=false -f deployment.yaml'
                 bat 'kubectl apply --dry-run=client --validate=false -f service.yaml'
