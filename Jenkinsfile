@@ -40,18 +40,32 @@ pipeline {
             }
         }
 
+        
         stage('Deploy') {
             steps {
-                bat 'set KUBECONFIG=C:\\ProgramData\\Jenkins\\.kube\\config'
-                bat 'echo Deploy stage: applying Kubernetes manifests...'
-                bat 'where kubectl'
-                bat 'kubectl config current-context'
-                bat 'dir deployment.yaml service.yaml'
-                bat 'kubectl apply --dry-run=client --validate=false -f deployment.yaml'
-                bat 'kubectl apply --dry-run=client --validate=false -f service.yaml'
-                bat 'echo Manifests valid - ready for kubectl apply from workstation'
+                bat '''
+                    set "KUBECONFIG=C:\\ProgramData\\Jenkins\\.kube\\config"
+
+                    echo Checking Kubernetes context...
+                    kubectl config current-context
+                    if errorlevel 1 exit /b 1
+
+                    echo Checking Kubernetes connection...
+                    kubectl get nodes
+                    if errorlevel 1 exit /b 1
+
+                    echo Validating Kubernetes manifests...
+                    kubectl apply --dry-run=client --validate=false -f deployment.yaml
+                    if errorlevel 1 exit /b 1
+
+                    kubectl apply --dry-run=client --validate=false -f service.yaml
+                    if errorlevel 1 exit /b 1
+
+                    echo Manifests validated successfully.
+                '''
             }
         }
+
     }
 
     post {
