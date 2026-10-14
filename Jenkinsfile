@@ -42,6 +42,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
+                bat 'set KUBECONFIG=C:\\ProgramData\\Jenkins\\.kube\\config'
                 bat 'echo Deploy stage: applying Kubernetes manifests...'
                 bat 'where kubectl'
                 bat 'kubectl config current-context'
