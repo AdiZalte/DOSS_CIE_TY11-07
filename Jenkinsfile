@@ -43,8 +43,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 bat 'echo Deploy stage: applying Kubernetes manifests...'
-                bat 'kubectl apply -f k8s/deployment.yaml'
-                bat 'kubectl apply -f k8s/service.yaml'
+                bat 'kubectl apply -f deployment.yaml'
+                bat 'kubectl apply -f service.yaml'
 
                 // Assumes the Deployment is named devops-app
                 bat 'kubectl rollout status deployment/devops-app --timeout=120s'
