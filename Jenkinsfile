@@ -29,7 +29,7 @@ pipeline {
 
                 bat 'docker run -d --name cie-test -p 8082:80 devops-cie-app:%BUILD_NUMBER%'
                 bat 'ping -n 11 127.0.0.1 > nul'
-                bat 'curl --fail --show-error http://localhost:8080'
+                bat 'curl --fail --show-error http://localhost:8082'
             }
 
             post {
