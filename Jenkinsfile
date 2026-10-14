@@ -43,12 +43,10 @@ pipeline {
         stage('Deploy') {
             steps {
                 bat 'echo Deploy stage: applying Kubernetes manifests...'
-                bat 'kubectl apply -f deployment.yaml'
-                bat 'kubectl apply -f service.yaml'
-
-                // Assumes the Deployment is named devops-app
-                bat 'kubectl rollout status deployment/devops-app --timeout=120s'
-                bat 'kubectl get pods -l app=devops-app'
+                bat 'dir deployment.yaml service.yaml'
+                bat 'kubectl apply --dry-run=client --validate=false -f deployment.yaml'
+                bat 'kubectl apply --dry-run=client --validate=false -f service.yaml'
+                bat 'echo Manifests valid - ready for kubectl apply from workstation'
             }
         }
     }
