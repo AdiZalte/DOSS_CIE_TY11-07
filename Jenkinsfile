@@ -27,7 +27,7 @@ pipeline {
                 // Remove any container left from a previous run
                 bat 'docker rm -f cie-test 2>nul || exit /b 0'
 
-                bat 'docker run -d --name cie-test -p 8080:80 devops-cie-app:%BUILD_NUMBER%'
+                bat 'docker run -d --name cie-test -p 8082:80 devops-cie-app:%BUILD_NUMBER%'
                 bat 'ping -n 11 127.0.0.1 > nul'
                 bat 'curl --fail --show-error http://localhost:8080'
             }
