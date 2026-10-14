@@ -24,42 +24,52 @@ pipeline {
 
         stage('Test') {
             steps {
-                // Remove any container left from a previous run
                 bat 'docker rm -f cie-test 2>nul || exit /b 0'
-
                 bat 'docker run -d --name cie-test -p 8082:80 devops-cie-app:%BUILD_NUMBER%'
                 bat 'ping -n 11 127.0.0.1 > nul'
                 bat 'curl --fail --show-error http://localhost:8082'
             }
-
             post {
                 always {
-                    // Clean up even if the test fails
                     bat 'docker rm -f cie-test 2>nul || exit /b 0'
                 }
             }
         }
 
-        
+        stage('Transfer Image') {
+            steps {
+                bat '''
+                    echo Exporting Docker image...
+                    docker save devops-cie-app:%BUILD_NUMBER% -o devops-cie-app.tar
+                    if errorlevel 1 exit /b 1
+
+                    echo Importing image into Kubernetes containerd...
+                    docker exec -i desktop-control-plane ctr -n k8s.io images import - < devops-cie-app.tar
+                    if errorlevel 1 exit /b 1
+
+                    echo Image transfer completed.
+                '''
+            }
+        }
+
         stage('Deploy') {
             steps {
                 bat '''
                     set "KUBECONFIG=C:\\ProgramData\\Jenkins\\.kube\\config"
 
-                    echo Checking Kubernetes context...
-                    kubectl config current-context
-                    if errorlevel 1 exit /b 1
-
                     echo Checking Kubernetes connection...
                     kubectl get nodes
                     if errorlevel 1 exit /b 1
 
-                    echo Validating Kubernetes manifests...
-                   
+                    echo Deploying Kubernetes manifests...
                     kubectl apply -f deployment.yaml
                     if errorlevel 1 exit /b 1
 
                     kubectl apply -f service.yaml
+                    if errorlevel 1 exit /b 1
+
+                    echo Updating deployment to the newly built image...
+                    kubectl set image deployment/devops-app web=devops-cie-app:%BUILD_NUMBER%
                     if errorlevel 1 exit /b 1
 
                     kubectl rollout status deployment/devops-app --timeout=120s
@@ -67,18 +77,14 @@ pipeline {
 
                     kubectl get pods
                     kubectl get services
-
-
-                    echo Manifests validated successfully.
                 '''
             }
         }
-
     }
 
     post {
         success {
-            echo 'CI/CD SUCCESS: Git -> Build -> Test -> Deploy done'
+            echo 'CI/CD SUCCESS: Git -> Build -> Test -> Transfer -> Deploy'
         }
         failure {
             echo 'CI/CD FAILED: check Console Output'
