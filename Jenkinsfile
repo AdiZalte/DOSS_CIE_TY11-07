@@ -27,7 +27,7 @@ pipeline {
                 bat 'docker rm -f cie-test 2>nul || exit /b 0'
                 bat 'docker run -d --name cie-test -p 8082:80 devops-cie-app:%BUILD_NUMBER%'
                 bat 'ping -n 11 127.0.0.1 > nul'
-                bat 'curl --fail --show-error http://localhost:8082'
+                bat 'curl.exe --fail --show-error http://127.0.0.1:8082'
             }
             post {
                 always {
