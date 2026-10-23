@@ -1,0 +1,24 @@
+# Prometheus configuration for the DevOps CIE project.
+# This is a standalone example. The existing kube-prometheus-stack Helm
+# installation does not automatically load this file.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Collect metrics from the Prometheus server itself.
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Optional: scrape your application only if it exposes a Prometheus
+  # metrics endpoint on port 8080 at path /metrics.
+  # Update the target/port/path to match your app before enabling this job.
+  # - job_name: "devops-app"
+  #   metrics_path: /metrics
+  #   static_configs:
+  #     - targets: ["devops-app.default.svc.cluster.local:8080"]
+
+  # Kubernetes node and pod metrics are normally discovered and configured
+  # by kube-prometheus-stack. They are intentionally not duplicated here.

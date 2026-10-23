@@ -1,3 +1,4 @@
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,8 +16,17 @@ spec:
         app: devops-app
     spec:
       containers:
-      - name: web
-        image: devops-cie-app:latest
-        imagePullPolicy: Never
-        ports:
-        - containerPort: 80
+        - name: web
+          image: devops-cie-app:latest
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 80
+
+        - name: nginx-exporter
+          image: nginx/nginx-prometheus-exporter:1.4.2
+          args:
+            - --nginx.scrape-uri=http://127.0.0.1:80/nginx_status
+          ports:
+            - name: metrics
+              containerPort: 9113
