@@ -34,7 +34,11 @@ pipeline {
                     docker ps -a --filter "name=cie-test"
                     docker logs cie-test
 
-                    curl.exe --retry 5 --retry-connrefused --retry-delay 2 --connect-timeout 5 --fail --show-error http://127.0.0.1:8082
+                    docker inspect cie-test --format "BEFORE CURL: status={{.State.Status}} exit={{.State.ExitCode}} oom={{.State.OOMKilled}}"
+                    docker ps -a --filter "name=cie-test"
+                    docker logs cie-test
+                    curl.exe --fail --show-error http://127.0.0.1:8082
+                    docker inspect cie-test --format "AFTER CURL: status={{.State.Status}} exit={{.State.ExitCode}} oom={{.State.OOMKilled}}"
                 '''
             }
             post {
