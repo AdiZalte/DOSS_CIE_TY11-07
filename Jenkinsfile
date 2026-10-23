@@ -22,12 +22,20 @@ pipeline {
             }
         }
 
+        
         stage('Test') {
             steps {
-                bat 'docker rm -f cie-test 2>nul || exit /b 0'
-                bat 'docker run -d --name cie-test -p 8082:80 devops-cie-app:%BUILD_NUMBER%'
-                bat 'ping -n 11 127.0.0.1 > nul'
-                bat 'curl.exe --fail --show-error http://127.0.0.1:8082'
+                bat '''
+                    docker rm -f cie-test 2>nul || exit /b 0
+                    docker run -d --name cie-test -p 8082:80 devops-cie-app:%BUILD_NUMBER%
+
+                    ping -n 11 127.0.0.1 >nul
+
+                    docker ps -a --filter "name=cie-test"
+                    docker logs cie-test
+
+                    curl.exe --retry 5 --retry-connrefused --retry-delay 2 --connect-timeout 5 --fail --show-error http://127.0.0.1:8082
+                '''
             }
             post {
                 always {
@@ -35,6 +43,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('Transfer Image') {
             steps {
